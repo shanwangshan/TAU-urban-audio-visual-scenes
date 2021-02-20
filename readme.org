@@ -14,7 +14,7 @@ This repository
 
 *** Download the features
 
-    Here is the [[https://tuni-my.sharepoint.com/:u:/r/personal/shanshan_wang_tuni_fi/Documents/features_data.zip?csf=1&web=1&e=xM2KbS][link]] to download features. After extracting the zip file, please put it under =./create_data/= folder.
+    Here is the [[https://tuni-my.sharepoint.com/:u:/g/personal/shanshan_wang_tuni_fi/EWJJrSwAJOhEkkI0ozOGXmgBmGDfDvVosiere77aTVTIYg?e=tph1Pe][link]] to download features. After extracting the zip file, please put it under =./create_data/= folder.
 
 *** Setup the conda environment
 
