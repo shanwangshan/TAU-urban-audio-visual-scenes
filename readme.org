@@ -1,7 +1,5 @@
 #+TITLE: TAU urban audio visual scenes 2021
 
-This repository
-
 
 ** Get started
 *** Clone this repository
@@ -11,6 +9,8 @@ This repository
    git clone https://github.com/shanwangshan/TAU-urban-audio-visual-scenes.git
 
    #+END_SRC
+This repository is composed of three main folders. =./create_data/= is to generate the features, =./train/= is to train the audio subnetwork, video subnetwork, and early fusion A-V network. =./train_combine/= is to train the proposed A-V network.
+
 
 *** Download the features
 
@@ -24,7 +24,7 @@ This repository
       conda create --name <env> --file requirements_openl3.txt
 
     #+END_SRC
-*It is only needed to setup the openl3 environment if you want to create the features by yourself. Otherwise, only creating torch environment is enough*.
+*It is only needed to setup the openl3 environment if you want to create the features by yourself. Otherwise, only creating torch environment is enough*. Since openl3 environment is only used to create the embedding features using the pretrained L3 network, it is not needed if you download the features provided above. If you are interested in L3 embedding, we refer readers to read  [[https://openl3.readthedocs.io/en/latest/tutorial.html#extracting-image-embeddings][OpenL3]].
 
 ** ICASSP paper results
 
