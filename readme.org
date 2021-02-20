@@ -1,0 +1,102 @@
+#+TITLE: TAU urban audio visual scenes 2021
+
+This repository
+
+
+** Get started
+*** Clone this repository
+
+   #+BEGIN_SRC sh :eval no
+
+   git clone https://github.com/shanwangshan/TAU-urban-audio-visual-scenes.git
+
+   #+END_SRC
+
+*** Download the features
+
+    Here is the [[https://tuni-my.sharepoint.com/:u:/r/personal/shanshan_wang_tuni_fi/Documents/features_data.zip?csf=1&web=1&e=xM2KbS][link]] to download features. After extracting the zip file, please put it under =./create_data/= folder.
+
+*** Setup the conda environment
+
+    #+BEGIN_SRC sh :eval no
+
+      conda create --name <env> --file requirements_torch.txt
+      conda create --name <env> --file requirements_openl3.txt
+
+    #+END_SRC
+*It is only needed to setup the openl3 environment if you want to create the features by yourself. Otherwise, only creating torch environment is enough*.
+
+** ICASSP paper results
+
+   #+BEGIN_SRC sh :eval: no
+
+     cd train
+     python test.py --features_path '../create_data/features_data/' --model_type 'audio'
+     python test.py --features_path '../create_data/features_data/' --model_type 'video'
+     python test.py --features_path '../create_data/features_data/' --model_type 'audio_video'
+
+   #+END_SRC
+#+OPTIONS: ^:nil
+if model_type is set to audio, which means audio sub-network is to be tested.
+if model_type is set to video, which means video sub-network is to be tested.
+if model_type is set to audio_video, which means the early fusion network is to be tested.
+#+BEGIN_SRC sh :eval:no
+
+  cd ../train_combine/
+  python test.py --features_path '../create_data/features_data/' --model_audio_path '../train/audio_model/model.pt' --model_video_path '../train/video_model/model.pt'
+
+#+END_SRC
+This is to test the proposed method, which requires weights trained from audio subnetwork and video subnetwork.
+
+*** Results
+
+| Method                    | Acurracy |
+|---------------------------+----------|
+| Audio only                |    75.8% |
+| Video only                |    68.4% |
+| Early A-V fusion          |    82.2% |
+| Proposed early A-V fusion |  *84.8%* |
+
+** DCASE2021 Task1 Subtask B Baseline
+
+   #+BEGIN_SRC sh :eval: no
+
+     cd train
+     python test_DCASE.py --features_path '../create_data/features_data/' --model_type 'audio'
+     python test_DCASE.py --features_path '../create_data/features_data/' --model_type 'video'
+     python test_DCASE.py --features_path '../create_data/features_data/' --model_type 'audio_video'
+
+   #+END_SRC
+#+OPTIONS: ^:nil
+if model_type is set to audio, which means audio sub-network is to be tested.
+if model_type is set to video, which means video sub-network is to be tested.
+if model_type is set to audio_video, which means the early fusion network is to be tested.
+
+#+BEGIN_SRC sh :eval:no
+
+  cd ../train_combine/
+  python test_DCASE.py --features_path '../create_data/features_data/' --model_audio_path '../train/audio_model/model.pt' --model_video_path '../train/video_model/model.pt'
+
+#+END_SRC
+This is to test the proposed method, which requires weights trained from audio subnetwork and video subnetwork.
+
+*** Results
+
+| Method                    | Acurracy | logloss |
+|---------------------------+----------+---------|
+| Audio only                |    65.1% |    1.06 |
+| Video only                |    64.9% |    1.63 |
+| Early A-V fusion          |    77.5% |    0.93 |
+| Proposed early A-V fusion |    77.0% |    0.65 |
+** Cite
+
+   If our work is useful to you then please cite us as:
+
+  #+BEGIN_SRC
+
+  @INPROCEEDINGS{wangicassap2021,
+  title={A Curated Dataset of Urban Scenes for Audio-Visual Scene Analysis},
+  booktitle={ICASSP 2021 - 2021 IEEE International Conference on Acoustics, Speech and Signal Processing (ICASSP)},
+  author={Wang, Shanshan and Mesaros, Annamaria and Heittola, Toni and Virtanen, Tuomas}, year={2021}}
+
+  #+END_SRC
