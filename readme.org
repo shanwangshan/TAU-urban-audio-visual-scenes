@@ -88,6 +88,17 @@ This is to test the proposed method, which requires weights trained from audio s
 | Video only                |    64.9% |    1.63 |
 | Early A-V fusion          |    77.5% |    0.93 |
 | Proposed early A-V fusion |    77.0% |    0.65 |
+
+** Command for creating examples files where video is embedded with audio
+
+   #+BEGIN_SRC .sh :eval:no
+
+   ffmpeg -i tram-stockholm-198-5976.mp4 -i tram-stockholm-198-5976.wav -shortest -strict -2 tram-stockholm-198-5976.mp4
+
+   #+END_SRC
+
+
+
 ** Cite
 
    If our work is useful to you then please cite us as:
