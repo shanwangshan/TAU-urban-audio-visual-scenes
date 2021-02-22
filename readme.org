@@ -1,7 +1,7 @@
 #+TITLE: TAU urban audio visual scenes 2021
 
 
-** Get started
+** Getting started
 *** Clone this repository
 
    #+BEGIN_SRC sh :eval no
@@ -24,7 +24,7 @@ This repository is composed of three main folders. =./create_data/= is to genera
       conda create --name <env> --file requirements_openl3.txt
 
     #+END_SRC
-*It is only needed to setup the openl3 environment if you want to create the features by yourself. Otherwise, only creating torch environment is enough*. Since openl3 environment is only used to create the embedding features using the pretrained L3 network, it is not needed if you download the features provided above. If you are interested in L3 embedding, we refer readers to read  [[https://openl3.readthedocs.io/en/latest/tutorial.html#extracting-image-embeddings][OpenL3]].
+*It is only needed to setup the openl3 environment if you want to create the features by yourself. Otherwise, only creating torch environment is enough*. This is because openl3 environment is used to create the embedding features using the pretrained L3 network. If you are interested in L3 embedding, we refer researchers to read  [[https://openl3.readthedocs.io/en/latest/tutorial.html#extracting-image-embeddings][OpenL3]].
 
 ** ICASSP paper results
 
@@ -84,20 +84,19 @@ This is to test the proposed method, which requires weights trained from audio s
 
 | Method                    | Acurracy | logloss |
 |---------------------------+----------+---------|
-| Audio only                |    65.1% |    1.06 |
-| Video only                |    64.9% |    1.63 |
-| Early A-V fusion          |    77.5% |    0.93 |
-| Proposed early A-V fusion |    77.0% |    0.65 |
+| Audio only                |    65.1% |   1.048 |
+| Video only                |    64.9% |   1.648 |
+| Early A-V fusion          |    77.5% |   0.963 |
+| Proposed early A-V fusion |    77.0% |   0.658 |
 
-** Command for creating examples files where video is embedded with audio
+*** Command for creating examples
+    To help researchers understand the dataset more intuitively, under the dataset folder, we created 20 video examples where video frames are played together with its audio frames. The command to create these videos is,
 
    #+BEGIN_SRC .sh :eval:no
 
-   ffmpeg -i tram-stockholm-198-5976.mp4 -i tram-stockholm-198-5976.wav -shortest -strict -2 tram-stockholm-198-5976.mp4
+   ffmpeg -i <video filename> -i <audio filename> -shortest -strict -2 <output filename>
 
    #+END_SRC
-
-
 
 ** Cite
 
