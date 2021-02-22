@@ -15,6 +15,8 @@ from tabulate import tabulate
 import matplotlib.pyplot as plt
 import seaborn as sn
 import argparse
+from sklearn.metrics import log_loss
+from operator import itemgetter
 '''
 This script is to test audio, video and audio-visual networks.
 Examples to run this code,
@@ -88,12 +90,22 @@ hf.visititems(func)
 model.load_state_dict(torch.load(model_path))
 print(model)
 #embed()
-fn = torch.nn.LogSoftmax(dim=1)
 fn_softmax = torch.nn.Softmax(dim=1)
 ground_tr_list = []
 esti_list=[]
-y_hat=[]
-y = []
+prob = []
+
+keys = ['airport',
+                'bus',
+                'metro',
+                'metro_station',
+                'park',
+                'public_square',
+                'shopping_mall',
+                'street_pedestrian',
+                'street_traffic',
+                'tram']
+
 for i in tqdm(range(len(all_files))):
 
     if args.model_type == 'audio_video':
@@ -105,7 +117,7 @@ for i in tqdm(range(len(all_files))):
         emb_audio= np.array(hf_audio[all_files[i]])
         emb_video = np.array(hf_video[all_files[i].replace('audio','video')])
 
-        es_label = torch.zeros(1,10)
+
         for j in np.linspace(0, emb_audio.shape[0], 10, endpoint=False):
             j= int(j)
             each_emb_audio = emb_audio[j,:]
@@ -123,26 +135,22 @@ for i in tqdm(range(len(all_files))):
             model.eval()
             with torch.no_grad():
                 es_label_each_frame = model(normed_embed_tensor)
-                es_label = fn(es_label_each_frame.view(1,-1))
                 es_prob = fn_softmax(es_label_each_frame)
-                es_prob = es_prob.flatten().tolist()
-
-            y_hat.append(es_prob)
-            y.append(int(all_files[i].split('/')[0]))
-
+            prob.append(es_prob.flatten().tolist())
             ground_tr = np.array(int(all_files[i].split('/')[0]))
             ground_tr_list.append(ground_tr)
 
-            es_class = torch.argmax(es_label)
+            es_class = torch.argmax(es_prob)
             esti_list.append(es_class)
 
 
     if args.model_type == 'audio' or args.model_type == 'video':
 
+
         hf = h5py.File(path_input, 'r')
         emb = np.array(hf[all_files[i]])
 
-        es_label = torch.zeros(1,10)
+        #es_label = torch.zeros(1,10)
         for j in np.linspace(0,emb.shape[0],10,endpoint=False):
             j = int(j)
             each_emb = emb[j,:]
@@ -155,19 +163,20 @@ for i in tqdm(range(len(all_files))):
             model.eval()
             with torch.no_grad():
                 es_label_each_frame = model(normed_embed_tensor)
-               # embed()
-                es_label = fn(es_label_each_frame.view(1,-1))
                 es_prob = fn_softmax(es_label_each_frame)
-                es_prob = es_prob.flatten().tolist()
-
-            y_hat.append(es_prob)
-            y.append(int(all_files[i].split('/')[0]))
+            prob.append(es_prob.flatten().tolist())
             ground_tr = np.array(int(all_files[i].split('/')[0]))
             ground_tr_list.append(ground_tr)
-            es_class = torch.argmax(es_label)
+
+            es_class = torch.argmax(es_prob)
             esti_list.append(es_class)
+            # data=es_prob.flatten().tolist()
+            # data.insert(0,keys[es_class])
+            # data.insert(0,all_files[i])
+            # data = dict(zip(columns,data))
 
             #embed()
+
 
 #embed()
 ##########evaluation##########
@@ -176,16 +185,6 @@ y_pred = np.array(esti_list)
 cm = confusion_matrix(y_true, y_pred)
 cm = cm.astype('float') / cm.sum(axis=1)[:, np.newaxis]
 cm.diagonal()
-keys = ['airport',
-                'bus',
-                'metro',
-                'metro_station',
-                'park',
-                'public_square',
-                'shopping_mall',
-                'street_pedestrian',
-                'street_traffic',
-                'tram']
 values = [np.round(i,decimals=3) for i in list(cm.diagonal())]
 
 
@@ -194,23 +193,38 @@ df_cm = pandas.DataFrame(cm, index = [i for i in keys],
 plt.figure(figsize = (15,12))
 sn.heatmap(df_cm, annot=True)
 plt.savefig('cm_DCASE'+args.model_type+'.png')
-values = [np.round(i,decimals=3) for i in list(cm.diagonal())]
+
 
 acc = accuracy_score(y_true, y_pred)
 acc = np.round(acc,decimals = 3)
 
-#embed()
+logloss_overall = log_loss(y_true=y_true.tolist(), y_pred=prob)
+logloss_class_wise = {}
+y_true_list = y_true.tolist()
+
+for scene_label in keys:
+     scene_number = keys.index(str(scene_label))
+     index_list = []
+     for i,e in  enumerate(y_true_list):
+         if e == scene_number:
+             index_list.append(i)
+     T = list(itemgetter(*index_list)(y_true_list))
+     P = list(itemgetter(*index_list)(prob))
+     logloss_class_wise[scene_label] = log_loss(y_true=T, y_pred=P, labels=list(range(len(keys))))
+
+
+
+##########print ##############
 l = []
 for i in range(len(keys)):
-    l.append([keys[i],values[i]])
+    l.append([keys[i],values[i],np.round(logloss_class_wise[keys[i]],decimals=3)])
 
-print(tabulate(l, headers=['Class', 'Accuracy']))
+print(tabulate(l, headers=['Class', 'Accuracy', 'Logloss']))
 print('  ')
 
-print('The overall accuracy using accuarcy_score  is', acc)
-print('The mean accuracy of class is', np.mean(values))
-#embed()
+print('Overall accuracy using accuarcy_score  is', acc)
+print('The mean accuracy over all classes is', np.round(np.mean(values),decimals=3))
 
-from sklearn.metrics import log_loss
-logloss_overall = log_loss(y_true=y, y_pred=y_hat)
-print('overall log loss is', logloss_overall)
+print('overall logloss is', np.round(logloss_overall,decimals=3))
+print('The mean logloss over all classes is',np.round(np.mean(np.array(list(logloss_class_wise.values()))),decimals=3))
+embed()

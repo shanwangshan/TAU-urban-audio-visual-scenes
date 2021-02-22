@@ -16,6 +16,8 @@ from tabulate import tabulate
 import matplotlib.pyplot as plt
 import seaborn as sn
 import argparse
+from sklearn.metrics import log_loss
+from operator import itemgetter
 
 '''
 This script is to test the proposed audio-visual networks.
@@ -77,12 +79,22 @@ hf = h5py.File(path_input, 'r')
 hf.visititems(func)
 
 #embed()
-fn = torch.nn.LogSoftmax(dim=1)
+
 fn_softmax = torch.nn.Softmax(dim=1)
 ground_tr_list = []
 esti_list=[]
-y_hat=[]
-y = []
+prob=[]
+keys = ['airport',
+                'bus',
+                'metro',
+                'metro_station',
+                'park',
+                'public_square',
+                'shopping_mall',
+                'street_pedestrian',
+                'street_traffic',
+                'tram']
+
 #all_files = random.sample(all_files, 3000)
 for i in tqdm(range(len(all_files))):
     path_input_audio = path_input
@@ -127,19 +139,16 @@ for i in tqdm(range(len(all_files))):
         batch_embed = torch.cat((normed_audio_embed_tensor, normed_video_embed_tensor), 1)
         with torch.no_grad():
             es_label_each_frame = model(batch_embed)
-            es_label = fn(es_label_each_frame.view(1, -1))
+
             es_prob = fn_softmax(es_label_each_frame)
             #es_prob = fn(es_label_each_frame)
-            es_prob = es_prob.flatten().tolist()
-
-        y_hat.append(es_prob)
-        y.append(int(all_files[i].split('/')[0]))
+        prob.append(es_prob.flatten().tolist())
 
         #es_label += es_label
         ground_tr = np.array(int(all_files[i].split('/')[0]))
         ground_tr_list.append(ground_tr)
 
-        es_class = torch.argmax(es_label)
+        es_class = torch.argmax(es_prob)
         esti_list.append(es_class)
         #embed()
 #embed()
@@ -149,17 +158,6 @@ y_pred = np.array(esti_list)
 cm = confusion_matrix(y_true, y_pred)
 cm = cm.astype('float') / cm.sum(axis=1)[:, np.newaxis]
 cm.diagonal()
-keys = ['airport',
-        'bus',
-        'metro',
-        'metro_station',
-        'park',
-        'public_square',
-        'shopping_mall',
-        'street_pedestrian',
-        'street_traffic',
-        'tram']
-
 #print(classification_report(y_true, y_pred, target_names=target_names))
 values = [np.round(i, decimals=3) for i in list(cm.diagonal())]
 df_cm = pandas.DataFrame(cm, index=[i for i in keys],columns=[i for i in keys])
@@ -170,16 +168,34 @@ plt.savefig('cm.png')
 # print(dictionary)
 acc = accuracy_score(y_true, y_pred)
 acc = np.round(acc, decimals=3)
+
+logloss_overall = log_loss(y_true=y_true.tolist(), y_pred=prob)
+logloss_class_wise = {}
+y_true_list = y_true.tolist()
+
+for scene_label in keys:
+     scene_number = keys.index(str(scene_label))
+     index_list = []
+     for i,e in  enumerate(y_true_list):
+         if e == scene_number:
+             index_list.append(i)
+     T = list(itemgetter(*index_list)(y_true_list))
+     P = list(itemgetter(*index_list)(prob))
+     logloss_class_wise[scene_label] = log_loss(y_true=T, y_pred=P, labels=list(range(len(keys))))
+
+
+
+##########print ##############
 l = []
 for i in range(len(keys)):
-    l.append([keys[i], values[i]])
+    l.append([keys[i],values[i],np.round(logloss_class_wise[keys[i]],decimals=3)])
 
-print(tabulate(l, headers=['Class', 'Accuracy']))
+print(tabulate(l, headers=['Class', 'Accuracy', 'Logloss']))
 print('  ')
-print('The overall accuracy using accuarcy_score  is', acc)
-print('The mean accuracy of class is', np.mean(values))
-#embed()
-from sklearn.metrics import log_loss
-logloss_overall = log_loss(y_true=y, y_pred=y_hat)
-print('overall log loss is', logloss_overall)
-#embed()
+
+print('Overall accuracy using accuarcy_score  is', acc)
+print('The mean accuracy over all classes is', np.round(np.mean(values),decimals=3))
+
+print('overall logloss is', np.round(logloss_overall,decimals=3))
+print('The mean logloss over all classes is',np.round(np.mean(np.array(list(logloss_class_wise.values()))),decimals=3))
+embed()
