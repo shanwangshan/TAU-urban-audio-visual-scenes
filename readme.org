@@ -1,6 +1,5 @@
 #+TITLE: TAU urban audio visual scenes 2021
 
-
 ** Getting started
 *** Clone this repository
 
@@ -10,7 +9,6 @@
 
    #+END_SRC
 This repository is composed of three main folders. =./create_data/= is to generate the features, =./train/= is to train the audio subnetwork, video subnetwork, and early fusion A-V network. =./train_combine/= is to train the proposed A-V network.
-
 
 *** Download the features
 
@@ -95,10 +93,9 @@ This is to test the proposed method, which requires weights trained from audio s
    #+BEGIN_SRC .sh :eval:no
 
    ffmpeg -i <video filename> -i <audio filename> -shortest -strict -2 <output filename>
-
    #+END_SRC
 
-** Cite
+** Citation
 
    If our work is useful to you then please cite us as:
 

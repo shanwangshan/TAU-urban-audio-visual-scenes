@@ -95,6 +95,12 @@ keys = ['airport',
                 'street_traffic',
                 'tram']
 
+columns=[i for i in keys]
+columns.insert(0,'scene_label')
+columns.insert(0,'filename_audio_video')
+
+df = pandas.DataFrame(columns = columns)
+
 #all_files = random.sample(all_files, 3000)
 for i in tqdm(range(len(all_files))):
     path_input_audio = path_input
@@ -112,6 +118,7 @@ for i in tqdm(range(len(all_files))):
     normed_embed_video = (emb_video-mean_video)/std_video
 
    # es_label = torch.zeros(1, 10)
+    counter=0
     for j in np.linspace(0, normed_embed_audio.shape[0], 10, endpoint=False):
         j = int(j)
 
@@ -151,6 +158,15 @@ for i in tqdm(range(len(all_files))):
         es_class = torch.argmax(es_prob)
         esti_list.append(es_class)
         #embed()
+        data=es_prob.flatten().tolist()
+        data.insert(0,keys[es_class])
+
+        data.insert(0,all_files[i].split('/')[-1]+'_'+str(counter)+'.wav.mp4')
+
+        data = dict(zip(columns,data))
+        df = df.append([data], ignore_index=True)
+        counter+=1
+df.to_csv('audio_video_output_proposed.csv',sep='\t',index= False)
 #embed()
 ############evaluation##########
 y_true = np.array(ground_tr_list)
@@ -184,7 +200,6 @@ for scene_label in keys:
      logloss_class_wise[scene_label] = log_loss(y_true=T, y_pred=P, labels=list(range(len(keys))))
 
 
-
 ##########print ##############
 l = []
 for i in range(len(keys)):
@@ -198,4 +213,3 @@ print('The mean accuracy over all classes is', np.round(np.mean(values),decimals
 
 print('overall logloss is', np.round(logloss_overall,decimals=3))
 print('The mean logloss over all classes is',np.round(np.mean(np.array(list(logloss_class_wise.values()))),decimals=3))
-embed()

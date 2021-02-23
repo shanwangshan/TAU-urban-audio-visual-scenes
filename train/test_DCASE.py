@@ -106,6 +106,12 @@ keys = ['airport',
                 'street_traffic',
                 'tram']
 
+columns=[i for i in keys]
+columns.insert(0,'scene_label')
+columns.insert(0,'filename_'+args.model_type)
+
+df = pandas.DataFrame(columns = columns)
+
 for i in tqdm(range(len(all_files))):
 
     if args.model_type == 'audio_video':
@@ -117,7 +123,7 @@ for i in tqdm(range(len(all_files))):
         emb_audio= np.array(hf_audio[all_files[i]])
         emb_video = np.array(hf_video[all_files[i].replace('audio','video')])
 
-
+        counter = 0
         for j in np.linspace(0, emb_audio.shape[0], 10, endpoint=False):
             j= int(j)
             each_emb_audio = emb_audio[j,:]
@@ -143,6 +149,16 @@ for i in tqdm(range(len(all_files))):
             es_class = torch.argmax(es_prob)
             esti_list.append(es_class)
 
+            data=es_prob.flatten().tolist()
+            data.insert(0,keys[es_class])
+
+            data.insert(0,all_files[i].split('/')[-1]+'_'+str(counter)+'.wav.mp4')
+
+            data = dict(zip(columns,data))
+            df = df.append([data], ignore_index=True)
+            counter+=1
+           # embed()
+
 
     if args.model_type == 'audio' or args.model_type == 'video':
 
@@ -151,6 +167,7 @@ for i in tqdm(range(len(all_files))):
         emb = np.array(hf[all_files[i]])
 
         #es_label = torch.zeros(1,10)
+        counter = 0
         for j in np.linspace(0,emb.shape[0],10,endpoint=False):
             j = int(j)
             each_emb = emb[j,:]
@@ -170,14 +187,26 @@ for i in tqdm(range(len(all_files))):
 
             es_class = torch.argmax(es_prob)
             esti_list.append(es_class)
-            # data=es_prob.flatten().tolist()
-            # data.insert(0,keys[es_class])
-            # data.insert(0,all_files[i])
-            # data = dict(zip(columns,data))
-
-            #embed()
 
 
+            data=es_prob.flatten().tolist()
+            data.insert(0,keys[es_class])
+            if args.model_type=='audio':
+                data.insert(0,all_files[i].split('/')[-1]+'_'+str(counter)+'.wav')
+            else:
+                data.insert(0,all_files[i].split('/')[-1]+'_'+str(counter)+'.mp4')
+
+            data = dict(zip(columns,data))
+            df = df.append([data], ignore_index=True)
+            counter+=1
+           # embed()
+
+if args.model_type=='video':
+    df.to_csv('video_output.csv',sep='\t',index= False)
+elif args.model_type=='audio':
+    df.to_csv('audio_output.csv',sep='\t',index= False)
+else:
+    df.to_csv('audio_video_output.csv',sep='\t',index= False)
 #embed()
 ##########evaluation##########
 y_true = np.array(ground_tr_list)
@@ -227,4 +256,4 @@ print('The mean accuracy over all classes is', np.round(np.mean(values),decimals
 
 print('overall logloss is', np.round(logloss_overall,decimals=3))
 print('The mean logloss over all classes is',np.round(np.mean(np.array(list(logloss_class_wise.values()))),decimals=3))
-embed()
+#embed()
