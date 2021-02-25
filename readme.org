@@ -8,8 +8,6 @@
    git clone https://github.com/shanwangshan/TAU-urban-audio-visual-scenes.git
 
    #+END_SRC
-This repository is composed of three main folders. =./create_data/= is to generate the features, =./train/= is to train the audio subnetwork, video subnetwork, and early fusion A-V network. =./train_combine/= is to train the proposed A-V network.
-
 *** Download the features
 
     Here is the [[https://tuni-my.sharepoint.com/:u:/g/personal/shanshan_wang_tuni_fi/EWJJrSwAJOhEkkI0ozOGXmgBmGDfDvVosiere77aTVTIYg?e=tph1Pe][link]] to download features. After extracting the zip file, please put it under =./create_data/= folder.
@@ -23,6 +21,9 @@ This repository is composed of three main folders. =./create_data/= is to genera
 
     #+END_SRC
 *It is only needed to setup the openl3 environment if you want to create the features by yourself. Otherwise, only creating torch environment is enough*. This is because openl3 environment is used to create the embedding features using the pretrained L3 network. If you are interested in L3 embedding, we refer researchers to read  [[https://openl3.readthedocs.io/en/latest/tutorial.html#extracting-image-embeddings][OpenL3]].
+*** Structure of this repository
+
+
 
 ** ICASSP paper results
 
@@ -80,12 +81,12 @@ This is to test the proposed method, which requires weights trained from audio s
 
 *** Results
 
-| Method                    | Acurracy | logloss |
-|---------------------------+----------+---------|
-| Audio only                |    65.1% |   1.048 |
-| Video only                |    64.9% |   1.648 |
-| Early A-V fusion          |    77.5% |   0.963 |
-| Proposed early A-V fusion |    77.0% |   0.658 |
+| Method                      | Logloss(Primary metrics) | Acurracy |
+|-----------------------------+--------------------------+----------|
+| Audio only                  |                    1.048 |    65.1% |
+| Video only                  |                    1.648 |    64.9% |
+| Early A-V fusion            |                    0.963 |    77.5% |
+| *Proposed early A-V fusion* |                 * 0.658* |  *77.0%* |
 
 *** Command for creating examples
     To help researchers understand the dataset more intuitively, under the dataset folder, we created 20 video examples where video frames are played together with its audio frames. The command to create these videos is,
