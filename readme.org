@@ -92,13 +92,9 @@
 
 5. *requirements_torch.txt:* conda environment for developing this system.
 
-6. under folder *=./train/=,*
+6. under the folder =./train/=: *model.py*: define the audio sub-network, video sub-network, and early A-V fusion network. *TAU_Urban_Dataset.py*: define the dataset. *train.py*: train these three networks based on the model_type. Trained weights are saved in =./train/audio_model/model.pt=, =./train/video_model/model.pt=, =./train/audio_video_model/model.pt=. *test.py*: test these three networks based on the model_type, of which results are presented in the ICASSP paper. *test_DCASE.py*: test these three networks based on one second, which is the DCASE challenge test setup. Output files are saved as csv files in the same folder. *gpu_train.sh*: sbatch scripts for submitting the job to the server.
 
-model.py: define the audio sub-network, video sub-network, and early A-V fusion network. TAU_Urban_Dataset.py: define the dataset. train.py: train these three networks based on the model_type. Trained weights are saved in =./train/audio_model/model.pt=, =./train/video_model/model.pt=, =./train/audio_video_model/model.pt=. test.py: test these three networks based on the model_type, of which results are presented in the ICASSP paper. test_DCASE.py: test these three networks based on one second, which is the DCASE challenge test setup. Output files are saved as csv files in the same folder. gpu_train.sh: sbatch scripts for submitting the job to the server.
-
-7. under folder *=./train_combine/=,*
-
-model.py: same as above. model_combine.py: the proposed model. TAU_Urban_Dataset.py: same as above, train.py: train the proposed network. Trained weights are saved in =./train_combine/audio_video_model/model.pt=. test.py: same as above, test_DCASE.py: same as above. gpu_train.sh: same as above. Output files are saved as csv files under the same folder.
+7. under the folder =./train_combine/=: *model.py*: same as above. *model_combine.py*: the proposed model. *TAU_Urban_Dataset.py*: same as above, *train.py*: train the proposed network. Trained weights are saved in =./train_combine/audio_video_model/model.pt=. *test.py*: same as above, *test_DCASE.py*: same as above. *gpu_train.sh*: same as above. Output files are saved as csv files under the same folder.
 
 
 
@@ -110,7 +106,6 @@ model.py: same as above. model_combine.py: the proposed model. TAU_Urban_Dataset
      python test.py --features_path '../create_data/features_data/' --model_type 'audio'
      python test.py --features_path '../create_data/features_data/' --model_type 'video'
      python test.py --features_path '../create_data/features_data/' --model_type 'audio_video'
-
    #+END_SRC
 #+OPTIONS: ^:nil
 if model_type is set to audio, which means audio sub-network is to be tested.
@@ -120,7 +115,6 @@ if model_type is set to audio_video, which means the early fusion network is to 
 
   cd ../train_combine/
   python test.py --features_path '../create_data/features_data/' --model_audio_path '../train/audio_model/model.pt' --model_video_path '../train/video_model/model.pt'
-
 #+END_SRC
 This is to test the proposed method, which requires weights trained from audio subnetwork and video subnetwork.
 
@@ -141,7 +135,6 @@ This is to test the proposed method, which requires weights trained from audio s
      python test_DCASE.py --features_path '../create_data/features_data/' --model_type 'audio'
      python test_DCASE.py --features_path '../create_data/features_data/' --model_type 'video'
      python test_DCASE.py --features_path '../create_data/features_data/' --model_type 'audio_video'
-
    #+END_SRC
 #+OPTIONS: ^:nil
 if model_type is set to audio, which means audio sub-network is to be tested.
@@ -152,7 +145,6 @@ if model_type is set to audio_video, which means the early fusion network is to 
 
   cd ../train_combine/
   python test_DCASE.py --features_path '../create_data/features_data/' --model_audio_path '../train/audio_model/model.pt' --model_video_path '../train/video_model/model.pt'
-
 #+END_SRC
 This is to test the proposed method (baseline) , which requires weights trained from audio subnetwork and video subnetwork.
 
@@ -196,5 +188,4 @@ This is to test the proposed method (baseline) , which requires weights trained 
     abstract = "This paper introduces a curated dataset of urban scenes for audio-visual scene analysis which consists of carefully selected and recorded material. The data was recorded in multiple European cities, using the same equipment, in multiple locations for each scene, and is openly available. We also present a case study for audio-visual scene recognition and show that joint modeling of audio and visual modalities brings significant performance gain compared to state of the art uni-modal systems. Our approach obtained an 84.4\% accuracy compared to 76.8\% for the audio-only and 70.0\% for the video-only equivalent systems.",
     url = "https://arxiv.org/abs/2011.00030"
 }
-
   #+END_SRC
