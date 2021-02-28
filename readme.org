@@ -6,7 +6,6 @@
    #+BEGIN_SRC sh :eval no
 
    git clone https://github.com/shanwangshan/TAU-urban-audio-visual-scenes.git
-
    #+END_SRC
 *** Download the features
 
@@ -18,10 +17,88 @@
 
       conda create --name <env> --file requirements_torch.txt
       conda create --name <env> --file requirements_openl3.txt
-
     #+END_SRC
 *It is only needed to setup the openl3 environment if you want to create the features by yourself. Otherwise, only creating torch environment is enough*. This is because openl3 environment is used to create the embedding features using the pretrained L3 network. If you are interested in L3 embedding, we refer researchers to read  [[https://openl3.readthedocs.io/en/latest/tutorial.html#extracting-image-embeddings][OpenL3]].
 *** Structure of this repository
+
+    #+BEGIN_SRC sh :results output :exports results :eval no
+    /usr/local/bin/tree ./
+    #+END_SRC
+
+     #+RESULTS:
+     #+begin_example
+.
+|-- create_data
+|   |-- create_tr.py
+|   |-- create_tr.sh
+|   |-- create_tt.py
+|   |-- create_tt.sh
+|   |-- create_val.py
+|   |-- create_val.sh
+|   |-- evaluation_setup
+|   |   |-- train.csv
+|   |   `-- val.csv
+|   |-- features_data
+|   |   |-- audio_features_data
+|   |   |   |-- global_mean_std.npz
+|   |   |   |-- tr.hdf5
+|   |   |   |-- tt.hdf5
+|   |   |   `-- val.hdf5
+|   |   `-- video_features_data
+|   |       |-- global_mean_std.npz
+|   |       |-- tr.hdf5
+|   |       |-- tt.hdf5
+|   |       `-- val.hdf5
+|   `-- split_data.py
+|-- readme.org
+|-- requirements_openl3.txt
+|-- requirements_torch.txt
+|-- train
+|   |-- audio_model
+|   |   `-- model.pt
+|   |-- audio_output.csv
+|   |-- audio_video_model
+|   |   `-- model.pt
+|   |-- audio_video_output.csv
+|   |-- gpu_train.sh
+|   |-- model.py
+|   |-- TAU_Urban_Dataset.py
+|   |-- test_DCASE.py
+|   |-- test.py
+|   |-- train.py
+|   |-- video_model
+|   |   `-- model.pt
+|   `-- video_output.csv
+`-- train_combine
+    |-- audio_video_model
+    |   `-- model.pt
+    |-- audio_video_output_proposed.csv
+    |-- gpu_train.sh
+    |-- model_combine.py
+    |-- model.py
+    |-- TAU_Urban_Dataset.py
+    |-- test_DCASE.py
+    |-- test.py
+    `-- train.py
+     #+end_example
+
+1. *split_data.py:* split the fold1_train.csv files into training set and validation set which are saved in the =./create_data/evaluation_setup/= folder.
+
+2. *create_tr.py  create_val.py create_tt.py:* create embedding features for training, validation, and testing set using the pretrained openl3 network. These features are saved in =./create_data/features_data/= folder.
+
+3. *readme.org:* this file which explains how the system is built.
+
+4. *requirements_openl3.txt:* conda environment for creating features using the pretrained openl3 network.
+
+5. *requirements_torch.txt:* conda environment for developing this system.
+
+6. under folder *=./train/=,*
+
+model.py: define the audio sub-network, video sub-network, and early A-V fusion network. TAU_Urban_Dataset.py: define the dataset. train.py: train these three networks based on the model_type. Trained weights are saved in =./train/audio_model/model.pt=, =./train/video_model/model.pt=, =./train/audio_video_model/model.pt=. test.py: test these three networks based on the model_type, of which results are presented in the ICASSP paper. test_DCASE.py: test these three networks based on one second, which is the DCASE challenge test setup. Output files are saved as csv files in the same folder. gpu_train.sh: sbatch scripts for submitting the job to the server.
+
+7. under folder *=./train_combine/=,*
+
+model.py: same as above. model_combine.py: the proposed model. TAU_Urban_Dataset.py: same as above, train.py: train the proposed network. Trained weights are saved in =./train_combine/audio_video_model/model.pt=. test.py: same as above, test_DCASE.py: same as above. gpu_train.sh: same as above. Output files are saved as csv files under the same folder.
 
 
 
@@ -77,18 +154,23 @@ if model_type is set to audio_video, which means the early fusion network is to 
   python test_DCASE.py --features_path '../create_data/features_data/' --model_audio_path '../train/audio_model/model.pt' --model_video_path '../train/video_model/model.pt'
 
 #+END_SRC
-This is to test the proposed method, which requires weights trained from audio subnetwork and video subnetwork.
+This is to test the proposed method (baseline) , which requires weights trained from audio subnetwork and video subnetwork.
 
 *** Results
 
-| Method                      | Logloss(Primary metrics) | Acurracy |
-|-----------------------------+--------------------------+----------|
-| Audio only                  |                    1.048 |    65.1% |
-| Video only                  |                    1.648 |    64.9% |
-| Early A-V fusion            |                    0.963 |    77.5% |
-| *Proposed early A-V fusion* |                 * 0.658* |  *77.0%* |
+    | Method                      | Logloss | Accuracy |
+    |-----------------------------+---------+----------|
+    | Audio only                  |   1.048 |    65.1% |
+    | Video only                  |   1.648 |    64.9% |
+    | Early A-V fusion            |   0.963 |    77.5% |
+    | *Proposed early A-V fusion* | *0.658* |  *77.0%* |
+
+    The proposed early A-V fusion results are the baseline results of DCASE2021 challenge Task1 Subtask B.
+
+   *NOTE*: Logloss is the primary evaluation metrics, second comes the accuracy.
 
 *** Command for creating examples
+
     To help researchers understand the dataset more intuitively, under the dataset folder, we created 20 video examples where video frames are played together with its audio frames. The command to create these videos is,
 
    #+BEGIN_SRC .sh :eval:no
@@ -96,15 +178,23 @@ This is to test the proposed method, which requires weights trained from audio s
    ffmpeg -i <video filename> -i <audio filename> -shortest -strict -2 <output filename>
    #+END_SRC
 
+
 ** Citation
 
    If our work is useful to you then please cite us as:
 
   #+BEGIN_SRC
 
-  @INPROCEEDINGS{wangicassap2021,
-  title={A Curated Dataset of Urban Scenes for Audio-Visual Scene Analysis},
-  booktitle={ICASSP 2021 - 2021 IEEE International Conference on Acoustics, Speech and Signal Processing (ICASSP)},
-  author={Wang, Shanshan and Mesaros, Annamaria and Heittola, Toni and Virtanen, Tuomas}, year={2021}}
+ @inproceedings{Wang2021_ICASSP,
+    author = "Wang, Shanshan and Mesaros, Annamaria and Heittola, Toni and Virtanen, Tuomas",
+    title = "A Curated Dataset of Urban Scenes for Audio-Visual Scene Analysis",
+    booktitle = "2021 IEEE International Conference on Acoustics, Speech and Signal Processing (ICASSP)",
+    year = "2021",
+    note = "accepted",
+    organization = "IEEE",
+    keywords = "Audio-visual data, Scene analysis, Acous-tic scene, Pattern recognition, Transfer learning",
+    abstract = "This paper introduces a curated dataset of urban scenes for audio-visual scene analysis which consists of carefully selected and recorded material. The data was recorded in multiple European cities, using the same equipment, in multiple locations for each scene, and is openly available. We also present a case study for audio-visual scene recognition and show that joint modeling of audio and visual modalities brings significant performance gain compared to state of the art uni-modal systems. Our approach obtained an 84.4\% accuracy compared to 76.8\% for the audio-only and 70.0\% for the video-only equivalent systems.",
+    url = "https://arxiv.org/abs/2011.00030"
+}
 
   #+END_SRC
