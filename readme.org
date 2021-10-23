@@ -9,7 +9,7 @@
    #+END_SRC
 *** Download the features
 
-    Here is the [[https://tuni-my.sharepoint.com/:u:/g/personal/shanshan_wang_tuni_fi/EWJJrSwAJOhEkkI0ozOGXmgBmGDfDvVosiere77aTVTIYg?e=tph1Pe][link]] to download features. After extracting the zip file, please put it under =./create_data/= folder.
+    Here is the [[https://drive.google.com/file/d/1-LrwHwUBG8Rq1THJtRlyZcGQMSVsEqUo/view?usp=sharing][feature link]] to download features. After extracting the zip file, please put it under =./create_data/= folder.
 
 *** Setup the conda environment
 
